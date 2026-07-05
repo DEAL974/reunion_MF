@@ -138,6 +138,22 @@ def _group_and_sort_packages(packages: list[dict]) -> list[tuple[str, list[dict]
     return result
 
 
+def _display_title(pkg: dict) -> str:
+    """
+    Libellé d'un paquet pour l'UI : titre renvoyé par l'API Météo-France,
+    avec correction d'une coquille connue du catalogue ("paramêtres" au
+    lieu de "paramètres", accent circonflexe erroné côté API, confirmé
+    sur un paquet HP1 réel), et code technique ajouté entre parenthèses
+    (ex: "(HP1)") pour repérage rapide - sauf si déjà présent dans le
+    titre (cas de la liste statique de secours, qui l'inclut déjà).
+    """
+    title = (pkg.get("title") or "").replace("paramêtre", "paramètre").replace("Paramêtre", "Paramètre")
+    code = pkg.get("code") or ""
+    if code and code not in title:
+        return f"{title} ({code})"
+    return title
+
+
 def _populate_grouped_combo(combo: QComboBox, packages: list[dict]) -> None:
     """Remplit un QComboBox avec des en-têtes de section non sélectionnables."""
     model = QStandardItemModel()
@@ -151,7 +167,7 @@ def _populate_grouped_combo(combo: QComboBox, packages: list[dict]) -> None:
         model.appendRow(header)
 
         for pkg in items:
-            item = QStandardItem(f"    {pkg['title']}")
+            item = QStandardItem(f"    {_display_title(pkg)}")
             item.setData(pkg["code"], Qt.ItemDataRole.UserRole)
             model.appendRow(item)
 
