@@ -1,0 +1,35 @@
+[general]
+name=Réunion MF
+qgisMinimumVersion=3.28
+description=Modélisations AROME Outre-Mer et mosaïque radar de précipitations (Météo-France) sur La Réunion, avec vue régionale native, vue Réunion reprojetée EPSG:2975, séries temporelles et actualisation radar quasi temps réel.
+version=0.3.0
+author=Cyriel Adnes (DEAL Réunion - SCETE/USIG)
+email=cyriel.adnes@developpement-durable.gouv.fr
+
+about=Ce plugin regroupe trois modules dans un panneau unique :
+    - AROME (prévisions) : interroge l'API paquets AROME Outre-Mer (Océan Indien, grille 0.025°), avec découverte dynamique des paramètres, vue régionale ou Réunion, styles automatiques, séries temporelles animées via le Temporal Controller.
+    - Radar (temps réel) : interroge l'API Paquet Radar, extrait la mosaïque de précipitation Réunion (radars Piton Villers + Colorado, résolution 500 m, pas de 5 min), actualisation manuelle constituant un historique local glissant.
+    - Observations (stations) : interroge l'API Paquet Observations, affiche les mesures horaires des stations météo de La Réunion sur 24h glissantes, avec animation temporelle native (vecteur).
+    Une clé API Météo-France (portail-api.meteofrance.fr, mode "API Key") est nécessaire, partagée entre les trois modules.
+
+    Développement réalisé avec l'assistance d'une IA (Claude, Anthropic), sous supervision et validation humaine de chaque composant.
+
+tracker=https://github.com/DEAL974/reunion_mf/issues
+repository=https://github.com/DEAL974/reunion_mf
+homepage=https://github.com/DEAL974/reunion_mf
+
+category=Raster
+tags=meteo,arome,meteofrance,reunion,previsions,grib,radar,precipitations,temps reel
+
+icon=icon.png
+experimental=True
+deprecated=False
+server=False
+hasProcessingProvider=no
+
+changelog=0.3.0
+    - Première version préparée pour diffusion publique.
+    - Trois modules : AROME (prévisions), Radar (temps réel), Observations (stations).
+    - Onglet Configuration avec clé API unique et test par produit.
+    - CRS projet forcé sur EPSG:2975, contour Réunion, fond OpenStreetMap.
+    - Séries temporelles animées (Temporal Controller), heure locale (GMT+4).
