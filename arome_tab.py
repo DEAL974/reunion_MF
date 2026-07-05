@@ -199,9 +199,10 @@ def _format_level_label(level_desc: str) -> str:
     """
     Reformate un niveau vertical brut GDAL en libellé plus lisible.
     Ex: '100000[Pa] ISBL="Isobaric surface"' -> '1000 hPa'.
-    Repli sur la chaîne brute si le format ne correspond pas à ce schéma
-    (ex: niveaux hauteur en mètres, jamais inspectés à ce jour — à
-    confirmer/adapter le jour où le paquet HP1/HP2/HP3 sera testé).
+    Ex: '20[m] HTGL="Specified height level above ground"' -> '20 m'
+    (format confirmé sur un paquet HP1 réel).
+    Repli sur la chaîne brute si le format ne correspond à aucun des deux
+    schémas connus.
     """
     if not level_desc:
         return ""
@@ -210,6 +211,13 @@ def _format_level_label(level_desc: str) -> str:
         try:
             hpa_value = float(match.group(1)) / 100.0
             return f"{hpa_value:g} hPa"
+        except ValueError:
+            pass
+    match = re.match(r"^([\d.]+)\[m\]", level_desc)
+    if match:
+        try:
+            m_value = float(match.group(1))
+            return f"{m_value:g} m"
         except ValueError:
             pass
     return level_desc
