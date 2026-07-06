@@ -1,18 +1,21 @@
 [general]
 name=Réunion MF
 qgisMinimumVersion=3.28
-description=Modélisations AROME Outre-Mer et mosaïque radar de précipitations (Météo-France) sur La Réunion, avec vue régionale native, vue Réunion reprojetée EPSG:2975, séries temporelles et actualisation radar quasi temps réel.
+description=AROME overseas forecasts and precipitation radar mosaic (Météo-France) for Réunion Island, with native regional view, reprojected Réunion view (EPSG:2975), animated time series and near real-time radar updates.
 version=0.3.0
 author=Cyriel Adnes (DEAL Réunion - SCETE/USIG)
 email=cyriel.adnes@developpement-durable.gouv.fr
 
-about=Ce plugin regroupe trois modules dans un panneau unique :
-    - AROME (prévisions) : interroge l'API paquets AROME Outre-Mer (Océan Indien, grille 0.025°), avec découverte dynamique des paramètres, vue régionale ou Réunion, styles automatiques, séries temporelles animées via le Temporal Controller.
-    - Radar (temps réel) : interroge l'API Paquet Radar, extrait la mosaïque de précipitation Réunion (radars Piton Villers + Colorado, résolution 500 m, pas de 5 min), actualisation manuelle constituant un historique local glissant.
-    - Observations (stations) : interroge l'API Paquet Observations, affiche les mesures horaires des stations météo de La Réunion sur 24h glissantes, avec animation temporelle native (vecteur).
-    Une clé API Météo-France (portail-api.meteofrance.fr, mode "API Key") est nécessaire, partagée entre les trois modules.
+about=This plugin brings together three modules in a single panel:
+    - AROME (forecasts): queries the AROME Overseas package API (Indian Ocean domain, 0.025° grid), with dynamic parameter discovery, regional or Réunion view, automatic styling, and animated time series via the Temporal Controller.
+    - Radar (near real-time): queries the Radar package API, extracts the Réunion precipitation mosaic (Piton Villers + Colorado radars, 500 m resolution, 5-minute steps), manual refresh building a local sliding history.
+    - Observations (weather stations): queries the Observations package API, displays hourly station measurements for Réunion Island, with native temporal animation (vector layer).
+    A Météo-France API key (portail-api.meteofrance.fr, "API Key" mode) is required, shared across all three modules.
 
-    Développement réalisé avec l'assistance d'une IA (Claude, Anthropic), sous supervision et validation humaine de chaque composant.
+    Developed with the assistance of an AI tool (Claude, Anthropic), under human supervision and validation for each component.
+
+    ---
+    Version française : ce plugin regroupe trois modules Météo-France pour La Réunion (AROME, Radar, Observations) dans un panneau QGIS unique. Voir le README du dépôt pour le détail complet en français.
 
 tracker=https://github.com/DEAL974/reunion_MF/issues
 repository=https://github.com/DEAL974/reunion_MF
