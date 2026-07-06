@@ -375,7 +375,6 @@ class AromeTabWidget(QWidget):
     # -- construction de l'interface -----------------------------------
 
     def _build_ui(self) -> None:
-        container = QWidget()
         layout = QVBoxLayout()
 
         # -- Bloc paquet + découverte --

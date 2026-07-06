@@ -2,6 +2,11 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.2] - 2026-07-06
+
+- Qualité : retrait des imports et variables locales inutilisés relevés par
+  Flake8 (`typing.Optional`, `pathlib.Path`, deux variables locales mortes).
+
 ## [0.3.1] - 2026-07-06
 
 Corrections suite à la soumission sur plugins.qgis.org.

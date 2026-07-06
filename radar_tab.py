@@ -13,8 +13,6 @@ API elle-même ne conservant que 20h, cf. radar_core.RADAR_RETENTION_HOURS).
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from qgis.core import (
     Qgis,
     QgsApplication,

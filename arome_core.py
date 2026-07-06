@@ -201,7 +201,6 @@ class AromeAPIClient:
 
         runs: list[AromeRun] = []
         for link in data.get("links", []):
-            title = link.get("title", "")
             href = link.get("href", "")
             if "referencetime=" in href:
                 ref_time = href.split("referencetime=")[-1]
