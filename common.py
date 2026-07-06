@@ -98,19 +98,24 @@ def try_open_temporal_controller_panel(iface) -> bool:
 
 class TimeOverlayManager:
     """
-    Annotation texte unique sur le canevas, affichant le pas de temps
-    courant du Temporal Controller. Partagée entre tous les onglets
+    Encadré HUD superposé au canevas carte, affichant le pas de temps
+    courant du Temporal Controller. Partagé entre tous les onglets
     temporels (AROME, Observations) pour éviter d'empiler plusieurs
     encadrés si plusieurs modules sont utilisés dans la même session.
 
-    EXPÉRIMENTAL : dépend du signal 'updateTemporalRange' du contrôleur
-    temporel, jamais vérifié dans un QGIS réel depuis ce contexte de
-    développement. Échoue silencieusement si l'API diffère.
+    Implémenté comme un QLabel natif, enfant direct du canevas — pas
+    comme QgsAnnotation/AnnotationManager (approche initiale abandonnée
+    après un bug observé en usage réel : l'encadré n'apparaissait que
+    furtivement pendant un zoom/dézoom avant de se faire recouvrir par
+    le rendu asynchrone de la couche temporelle, l'empilement de l'item
+    d'annotation par rapport à l'item de rendu carte n'étant pas garanti
+    par QGIS). Un widget Qt classique reste au-dessus du rendu carte par
+    construction, sans dépendre de cet ordre d'empilement interne.
     """
 
     def __init__(self, iface):
         self.iface = iface
-        self._annotation = None
+        self._label_widget = None
         self._label = "Réunion MF"
         self._legend_pixmap = None
         self._signal_connected = False
@@ -122,28 +127,31 @@ class TimeOverlayManager:
     def set_legend_pixmap(self, pixmap) -> None:
         """
         Définit (ou efface avec None) une image de légende affichée sous
-        le titre/pas de temps, dans la même annotation — évite d'avoir
-        deux annotations positionnées séparément (source de chevauchement,
-        la hauteur réelle de chacune n'étant pas connue à l'avance).
+        le titre/pas de temps, dans le même encadré — évite d'avoir deux
+        encadrés positionnés séparément (source de chevauchement, la
+        hauteur réelle de chacun n'étant pas connue à l'avance).
         """
         self._legend_pixmap = pixmap
 
     def ensure_active(self) -> bool:
-        """Crée l'annotation si besoin et branche les signaux. Retourne False si indisponible."""
-        from qgis.core import QgsProject, QgsTextAnnotation
-        from qgis.PyQt.QtCore import QPointF
+        """Crée le label si besoin et branche les signaux. Retourne False si indisponible."""
+        from qgis.PyQt.QtCore import Qt
+        from qgis.PyQt.QtWidgets import QLabel
 
-        if self._annotation is None:
-            annotation = QgsTextAnnotation()
-            annotation.setHasFixedMapPosition(False)
-            annotation.setFrameOffsetFromReferencePointMm(QPointF(3.0, 3.0))
-            QgsProject.instance().annotationManager().addAnnotation(annotation)
-            self._annotation = annotation
+        canvas = self.iface.mapCanvas()
+
+        if self._label_widget is None:
+            label_widget = QLabel(canvas)
+            label_widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+            label_widget.setTextFormat(Qt.TextFormat.RichText)
+            label_widget.move(10, 10)
+            label_widget.hide()  # affiché seulement une fois un contenu défini
+            self._label_widget = label_widget
 
         ok = True
         if not self._signal_connected:
             try:
-                controller = self.iface.mapCanvas().temporalController()
+                controller = canvas.temporalController()
                 controller.updateTemporalRange.connect(self._on_range_changed)
                 self._signal_connected = True
             except AttributeError:
@@ -151,6 +159,7 @@ class TimeOverlayManager:
 
         if not self._layers_removed_connected:
             try:
+                from qgis.core import QgsProject
                 QgsProject.instance().layersRemoved.connect(self._on_layers_removed)
                 self._layers_removed_connected = True
             except AttributeError:
@@ -159,14 +168,12 @@ class TimeOverlayManager:
         return ok
 
     def _on_range_changed(self, time_range) -> None:
-        if self._annotation is None:
+        if self._label_widget is None:
             return
         try:
             start_str = time_range.begin().toString("dd/MM/yyyy HH:mm")
         except Exception:
             return
-
-        from qgis.PyQt.QtGui import QTextDocument
 
         legend_html = ""
         if self._legend_pixmap is not None:
@@ -180,18 +187,18 @@ class TimeOverlayManager:
             b64_image = base64.b64encode(bytes(buffer.data())).decode("ascii")
             legend_html = f"<br/><img src='data:image/png;base64,{b64_image}'/>"
 
-        doc = QTextDocument()
-        doc.setHtml(
+        self._label_widget.setText(
             f"<div style='background-color:rgba(255,255,255,200); padding:4px;'>"
             f"<b>{self._label}</b><br/>{start_str} (heure locale, GMT+4)"
             f"{legend_html}</div>"
         )
-        self._annotation.setDocument(doc)
-        self.iface.mapCanvas().refresh()
+        self._label_widget.adjustSize()
+        self._label_widget.raise_()
+        self._label_widget.show()
 
     def refresh_now(self) -> None:
         """
-        Force la mise à jour immédiate de l'annotation avec la plage
+        Force la mise à jour immédiate de l'encadré avec la plage
         temporelle courante, sans attendre que l'utilisateur fasse défiler
         le Temporal Controller (sinon la légende n'apparaîtrait qu'au
         prochain changement de pas de temps).
@@ -205,7 +212,7 @@ class TimeOverlayManager:
 
     def _on_layers_removed(self, layer_ids) -> None:
         """Retire l'overlay dès qu'il ne reste plus aucune couche temporelle active (tous modules confondus)."""
-        if self._annotation is None:
+        if self._label_widget is None:
             return
         from qgis.core import QgsProject, QgsRasterLayer, QgsVectorLayer
 
@@ -217,9 +224,6 @@ class TimeOverlayManager:
             for lyr in project.mapLayers().values()
         )
         if not still_has_temporal:
-            try:
-                project.annotationManager().removeAnnotation(self._annotation)
-            except Exception:
-                pass
-            self._annotation = None
-            self.iface.mapCanvas().refresh()
+            self._label_widget.hide()
+            self._label_widget.deleteLater()
+            self._label_widget = None

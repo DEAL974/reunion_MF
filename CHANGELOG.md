@@ -2,6 +2,16 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.4] - 2026-07-06
+
+- Corrige un bug d'affichage signalé en usage réel : l'encadré titre/pas de
+  temps/légende du Temporal Controller (AROME, Observations) n'apparaissait
+  que furtivement lors d'un zoom/dézoom avant de disparaître, l'ordre
+  d'empilement de l'annotation carte QGIS vis-à-vis du rendu asynchrone des
+  couches temporelles n'étant pas garanti. Remplace le mécanisme
+  `QgsAnnotation`/`AnnotationManager` par un `QLabel` natif, enfant direct
+  du canevas, systématiquement au premier plan.
+
 ## [0.3.3] - 2026-07-06
 
 - Qualité : corrige le reste des remarques Flake8 remontées par le scan
