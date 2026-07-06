@@ -2,6 +2,14 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.3] - 2026-07-06
+
+- Qualité : corrige le reste des remarques Flake8 remontées par le scan
+  plugins.qgis.org (E241 alignement de dictionnaires, E127 indentation de
+  continuation, E305 lignes vides entre définitions, W503 saut de ligne
+  avant opérateur binaire). Les lignes dépassant 79 caractères (E501)
+  restent nombreuses mais sont purement cosmétiques, non corrigées ici.
+
 ## [0.3.2] - 2026-07-06
 
 - Qualité : retrait des imports et variables locales inutilisés relevés par

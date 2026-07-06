@@ -78,6 +78,7 @@ def _apply_temporal_range(layer: QgsRasterLayer, start: QDateTime, end: QDateTim
     temporal_props.setFixedTemporalRange(QgsDateTimeRange(start, end))
     temporal_props.setIsActive(True)
 
+
 # Ordre d'affichage des catégories et libellés lisibles.
 _CATEGORY_ORDER = ["surface", "hauteur", "isobares", "autre"]
 _CATEGORY_LABELS = {
@@ -505,7 +506,7 @@ class AromeTabWidget(QWidget):
         service = _make_service()
         if service is None:
             QMessageBox.warning(self, "Clé API manquante",
-                                 "Merci de renseigner ta clé API Météo-France.")
+                                "Merci de renseigner ta clé API Météo-France.")
             return
 
         package = self.combo_paquet.currentData()
@@ -560,7 +561,7 @@ class AromeTabWidget(QWidget):
         service = _make_service()
         if service is None:
             QMessageBox.warning(self, "Clé API manquante",
-                                 "Merci de renseigner ta clé API Météo-France.")
+                                "Merci de renseigner ta clé API Météo-France.")
             return
 
         band = self.combo_parametre.currentData()
@@ -627,7 +628,7 @@ class AromeTabWidget(QWidget):
         service = _make_service()
         if service is None:
             QMessageBox.warning(self, "Clé API manquante",
-                                 "Merci de renseigner ta clé API Météo-France.")
+                                "Merci de renseigner ta clé API Météo-France.")
             return
 
         band = self.combo_parametre.currentData()
@@ -764,16 +765,16 @@ class AromeTabWidget(QWidget):
 
         self.label_statut.setText(
             f"Série temporelle chargée : {len(task.results)} échéances "
-            f"dans le groupe '{group_name}'."
-            + (f" ({len(task.skipped)} échéance(s) ignorée(s) : {task.skipped}, "
-               f"paramètre absent à ces échéances.)" if task.skipped else "")
-            + temporal_note
+            f"dans le groupe '{group_name}'." +
+            (f" ({len(task.skipped)} échéance(s) ignorée(s) : {task.skipped}, "
+             f"paramètre absent à ces échéances.)" if task.skipped else "") +
+            temporal_note
         )
         self.iface.messageBar().pushMessage(
             "AROME Outre-Mer",
-            f"Série '{group_name}' chargée ({len(task.results)} échéances"
-            + (f", {len(task.skipped)} ignorée(s)" if task.skipped else "")
-            + ").",
+            f"Série '{group_name}' chargée ({len(task.results)} échéances" +
+            (f", {len(task.skipped)} ignorée(s)" if task.skipped else "") +
+            ").",
             level=Qgis.MessageLevel.Success, duration=6,
         )
 
@@ -825,7 +826,7 @@ class AromeTabWidget(QWidget):
         service = _make_service()
         if service is None:
             QMessageBox.warning(self, "Clé API manquante",
-                                 "Merci de renseigner ta clé API Météo-France.")
+                                "Merci de renseigner ta clé API Météo-France.")
             return
 
         removed = service.purge_cache(days=3)

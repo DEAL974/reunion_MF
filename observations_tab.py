@@ -206,8 +206,8 @@ class ObservationsTabWidget(QWidget):
             "Contrôleur temporel) pour animer les 24h."
         )
         self.label_statut.setText(
-            f"{layer.featureCount()} observations chargées ('{self.LAYER_NAME}')."
-            + note + temporal_note
+            f"{layer.featureCount()} observations chargées ('{self.LAYER_NAME}')." +
+            note + temporal_note
         )
         self.iface.messageBar().pushMessage(
             "Observations Réunion",

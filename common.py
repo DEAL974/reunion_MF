@@ -211,9 +211,9 @@ class TimeOverlayManager:
 
         project = QgsProject.instance()
         still_has_temporal = any(
-            isinstance(lyr, (QgsRasterLayer, QgsVectorLayer))
-            and lyr.temporalProperties() is not None
-            and lyr.temporalProperties().isActive()
+            isinstance(lyr, (QgsRasterLayer, QgsVectorLayer)) and
+            lyr.temporalProperties() is not None and
+            lyr.temporalProperties().isActive()
             for lyr in project.mapLayers().values()
         )
         if not still_has_temporal:

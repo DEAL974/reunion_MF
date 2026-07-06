@@ -67,21 +67,21 @@ GDAL_MIN_VERSION_HINT = (3, 9, 0)
 # Mapping des paramètres du paquet SP1 (surface).
 # Complété au fil des paquets réellement utilisés (SP2, HP1...).
 AROME_PARAMS_MAP = {
-    "WDIR":   {"label_fr": "Direction du vent",        "unite": "deg",       "niveau": "10m"},
-    "WIND":   {"label_fr": "Force du vent",             "unite": "m/s",       "niveau": "10m"},
-    "GUST":   {"label_fr": "Rafales",                   "unite": "m/s",       "niveau": "10m"},
-    "PRMSL":  {"label_fr": "Pression mer",              "unite": "hPa",       "niveau": "mer"},
-    "UGRD":   {"label_fr": "Vent - composante U",       "unite": "m/s",       "niveau": "10m"},
-    "VGRD":   {"label_fr": "Vent - composante V",       "unite": "m/s",       "niveau": "10m"},
-    "UGUST":  {"label_fr": "Rafale - composante U",     "unite": "m/s",       "niveau": "10m"},
-    "VGUST":  {"label_fr": "Rafale - composante V",     "unite": "m/s",       "niveau": "10m"},
-    "TMP":    {"label_fr": "Température",               "unite": "degC",      "niveau": "2m"},
-    "RH":     {"label_fr": "Humidité relative",         "unite": "%",         "niveau": "2m"},
-    "TPRATE": {"label_fr": "Précipitation totale",       "unite": "mm/h",      "niveau": "surface"},
-    "TCDC":   {"label_fr": "Couverture nuageuse",       "unite": "%",         "niveau": "surface"},
-    "SPRATE": {"label_fr": "Précipitation neige",        "unite": "mm/h",      "niveau": "surface"},
-    "DSWRF":  {"label_fr": "Rayonnement solaire descendant", "unite": "W/m2", "niveau": "surface"},
-    "GPRATE": {"label_fr": "Précipitation grésil",       "unite": "mm/h",      "niveau": "surface"},
+    "WDIR": {"label_fr": "Direction du vent", "unite": "deg", "niveau": "10m"},
+    "WIND": {"label_fr": "Force du vent", "unite": "m/s", "niveau": "10m"},
+    "GUST": {"label_fr": "Rafales", "unite": "m/s", "niveau": "10m"},
+    "PRMSL": {"label_fr": "Pression mer", "unite": "hPa", "niveau": "mer"},
+    "UGRD": {"label_fr": "Vent - composante U", "unite": "m/s", "niveau": "10m"},
+    "VGRD": {"label_fr": "Vent - composante V", "unite": "m/s", "niveau": "10m"},
+    "UGUST": {"label_fr": "Rafale - composante U", "unite": "m/s", "niveau": "10m"},
+    "VGUST": {"label_fr": "Rafale - composante V", "unite": "m/s", "niveau": "10m"},
+    "TMP": {"label_fr": "Température", "unite": "degC", "niveau": "2m"},
+    "RH": {"label_fr": "Humidité relative", "unite": "%", "niveau": "2m"},
+    "TPRATE": {"label_fr": "Précipitation totale", "unite": "mm/h", "niveau": "surface"},
+    "TCDC": {"label_fr": "Couverture nuageuse", "unite": "%", "niveau": "surface"},
+    "SPRATE": {"label_fr": "Précipitation neige", "unite": "mm/h", "niveau": "surface"},
+    "DSWRF": {"label_fr": "Rayonnement solaire descendant", "unite": "W/m2", "niveau": "surface"},
+    "GPRATE": {"label_fr": "Précipitation grésil", "unite": "mm/h", "niveau": "surface"},
 }
 
 # Conversions appliquées après extraction, pour un affichage directement
@@ -91,10 +91,10 @@ AROME_PARAMS_MAP = {
 # sur l'heure. Valable pour une lecture visuelle, pas pour un cumul précis
 # sur plusieurs échéances (il faudrait alors intégrer, pas juste multiplier).
 UNIT_CONVERSIONS = {
-    "TPRATE": 3600.0,   # kg/(m2.s) -> mm/h  (1 kg/m2 d'eau = 1 mm)
+    "TPRATE": 3600.0,  # kg/(m2.s) -> mm/h  (1 kg/m2 d'eau = 1 mm)
     "SPRATE": 3600.0,
     "GPRATE": 3600.0,
-    "PRMSL":  0.01,     # Pa -> hPa
+    "PRMSL": 0.01,  # Pa -> hPa
 }
 
 # Repli si list_packages() échoue (réseau indisponible, quota...).
@@ -324,7 +324,7 @@ class AromeCache:
         return self.grib_dir / filename
 
     def output_path(self, mode: str, reference_time: str, echeance_heures: int,
-                     element: str, band_index: int) -> Path:
+                    element: str, band_index: int) -> Path:
         """
         mode: 'regional' ou 'reunion'
         band_index inclus dans le nom pour lever toute ambiguïté sur les
