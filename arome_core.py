@@ -33,6 +33,8 @@ from typing import Optional
 
 import numpy as np
 
+from .http_utils import urlopen_https
+
 try:
     from osgeo import gdal
     gdal.UseExceptions()
@@ -243,7 +245,7 @@ class AromeAPIClient:
         request = urllib.request.Request(url, headers={"apikey": self._api_key})
 
         try:
-            with urllib.request.urlopen(request, timeout=self._timeout) as response:
+            with urlopen_https(request, timeout=self._timeout) as response:
                 content_type = response.headers.get("Content-Type", "")
                 payload = response.read()
         except urllib.error.HTTPError as exc:
@@ -279,7 +281,7 @@ class AromeAPIClient:
     def _get_json(self, url: str) -> dict:
         request = urllib.request.Request(url, headers={"apikey": self._api_key})
         try:
-            with urllib.request.urlopen(request, timeout=self._timeout) as response:
+            with urlopen_https(request, timeout=self._timeout) as response:
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             detail = ""

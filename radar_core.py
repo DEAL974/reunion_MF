@@ -31,6 +31,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .http_utils import urlopen_https
+
 try:
     from osgeo import gdal
     gdal.UseExceptions()
@@ -85,7 +87,7 @@ class RadarAPIClient:
         """
         request = urllib.request.Request(RADAR_API_URL, headers={"apikey": self._api_key})
         try:
-            with urllib.request.urlopen(request, timeout=self._timeout) as response:
+            with urlopen_https(request, timeout=self._timeout) as response:
                 payload = response.read()
         except urllib.error.HTTPError as exc:
             detail = ""

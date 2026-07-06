@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .arome_core import AromeAPIClient, AromeCoreError
+from .http_utils import urlopen_https
 from .observations_core import DEFAULT_DEPARTEMENT, ObservationsAPIClient, ObservationsCoreError
 from .radar_core import RADAR_API_URL
 
@@ -54,7 +55,7 @@ def test_radar(api_key: str, timeout: int = 15) -> ConfigTestResult:
 
     request = urllib.request.Request(RADAR_API_URL, headers={"apikey": api_key}, method="HEAD")
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with urlopen_https(request, timeout=timeout) as response:
             return ConfigTestResult("Radar", True, f"Accès confirmé (HTTP {response.status}).")
     except urllib.error.HTTPError as exc:
         if exc.code in (401, 403):

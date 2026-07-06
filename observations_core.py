@@ -27,6 +27,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from .http_utils import urlopen_https
+
 API_BASE_URL = "https://public-api.meteofrance.fr/public/DPPaquetObs/v2"
 DEFAULT_DEPARTEMENT = "974"  # La Réunion
 
@@ -118,7 +120,7 @@ class ObservationsAPIClient:
         )
         request = urllib.request.Request(url, headers={"apikey": self._api_key})
         try:
-            with urllib.request.urlopen(request, timeout=self._timeout) as response:
+            with urlopen_https(request, timeout=self._timeout) as response:
                 payload = response.read()
         except urllib.error.HTTPError as exc:
             detail = ""
