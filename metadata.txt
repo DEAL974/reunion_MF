@@ -2,7 +2,7 @@
 name=Réunion MF
 qgisMinimumVersion=3.28
 description=AROME overseas forecasts and precipitation radar mosaic (Météo-France) for Réunion Island, with native regional view, reprojected Réunion view (EPSG:2975), animated time series and near real-time radar updates.
-version=0.3.0
+version=0.3.1
 author=Cyriel Adnes (DEAL Réunion - SCETE-USIG)
 email=cyriel.adnes@developpement-durable.gouv.fr
 
@@ -30,7 +30,14 @@ deprecated=False
 server=False
 hasProcessingProvider=no
 
-changelog=0.3.0
+changelog=0.3.1
+    - Corrige les 5 findings de sécurité Bandit B310 (validation explicite du schéma HTTPS avant urlopen).
+    - Traduit description/about en anglais (requis par la checklist de soumission plugins.qgis.org).
+    - Corrige le champ author (slash non autorisé).
+    - Corrige le format des niveaux hauteur AROME (HP1/HP2/HP3) et une coquille du catalogue API.
+    - Retire une mention obsolète de la note technique.
+
+    0.3.0
     - Première version préparée pour diffusion publique.
     - Trois modules : AROME (prévisions), Radar (temps réel), Observations (stations).
     - Onglet Configuration avec clé API unique et test par produit.
