@@ -65,6 +65,10 @@ officiel, ou manuellement :
 Voir [`docs/note_technique_reunion_mf.pdf`](docs/note_technique_reunion_mf.pdf)
 pour le détail technique complet.
 
+## Contact
+
+Bug, question ou suggestion : [ouvrir un ticket sur GitHub](https://github.com/DEAL974/reunion_MF/issues).
+
 ## Licence
 
 GPL-3.0, voir [LICENSE](LICENSE).
