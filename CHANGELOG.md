@@ -2,6 +2,17 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.13] - 2026-07-08
+
+- Confirmé en usage réel : AROME, Radar et l'exclusion mutuelle
+  fonctionnent tous correctement (0.3.5 à 0.3.12).
+- Ergonomie : les menus déroulants (paquets/paramètres AROME et
+  Observations) ne dictent plus leur largeur au panneau d'après leur
+  item le plus long (ex. "Paramètres additionnels (2) en niveaux
+  isobares (IP2)"), ce qui rendait le dock trop large et impossible à
+  rétrécir pour laisser de la place à la carte/l'explorateur de
+  couches. Texte tronqué avec "…", info-bulle complète au survol.
+
 ## [0.3.12] - 2026-07-08
 
 - AROME et Radar s'excluent mutuellement sur le Temporal Controller,

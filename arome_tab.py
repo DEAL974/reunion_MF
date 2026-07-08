@@ -65,6 +65,18 @@ def _reference_time_to_datetime(reference_time: str) -> datetime:
     return datetime.strptime(reference_time, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
 
 
+def _cap_combo_width(combo: QComboBox, chars: int = 26) -> None:
+    """
+    Empêche un QComboBox de dicter sa largeur au panneau entier d'après
+    son item le plus long (ex: "Paramètres additionnels (2) en niveaux
+    isobares (IP2)"). Sans ça, le dock devient trop large et impossible
+    à rétrécir (texte tronqué avec "…", info-bulle disponible au survol).
+    """
+    combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLength)
+    combo.setMinimumContentsLength(chars)
+    combo.currentIndexChanged.connect(lambda _: combo.setToolTip(combo.currentText()))
+
+
 # Ordre d'affichage des catégories et libellés lisibles.
 _CATEGORY_ORDER = ["surface", "hauteur", "isobares", "autre"]
 _CATEGORY_LABELS = {
@@ -374,6 +386,7 @@ class AromeTabWidget(QWidget):
         package_form = QFormLayout()
 
         self.combo_paquet = QComboBox()
+        _cap_combo_width(self.combo_paquet)
         package_form.addRow("Paquet :", self.combo_paquet)
 
         self.button_analyser = QPushButton("Analyser le paquet (découvrir les paramètres)")
@@ -382,6 +395,7 @@ class AromeTabWidget(QWidget):
 
         self.combo_parametre = QComboBox()
         self.combo_parametre.setEnabled(False)
+        _cap_combo_width(self.combo_parametre)
         package_form.addRow("Paramètre :", self.combo_parametre)
 
         package_group.setLayout(package_form)
@@ -430,6 +444,7 @@ class AromeTabWidget(QWidget):
         layout.addWidget(self.button_charger)
 
         self.combo_serie_max = QComboBox()
+        _cap_combo_width(self.combo_serie_max)
         for heures in SERIE_TEMPORELLE_OPTIONS_HEURES:
             suffix = " (par défaut)" if heures == SERIE_TEMPORELLE_DEFAULT_HEURES else ""
             self.combo_serie_max.addItem(f"H+0 → H+{heures}{suffix}", userData=heures)

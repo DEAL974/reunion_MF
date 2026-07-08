@@ -51,6 +51,18 @@ def _parse_validity_time(value: str) -> datetime:
     return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
 
 
+def _cap_combo_width(combo: QComboBox, chars: int = 26) -> None:
+    """
+    Empêche un QComboBox de dicter sa largeur au panneau entier d'après
+    son item le plus long. Sans ça, le dock devient trop large et
+    impossible à rétrécir (texte tronqué avec "…", info-bulle disponible
+    au survol).
+    """
+    combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLength)
+    combo.setMinimumContentsLength(chars)
+    combo.currentIndexChanged.connect(lambda _: combo.setToolTip(combo.currentText()))
+
+
 def _make_service() -> ObservationsService | None:
     api_key = get_api_key()
     if not api_key:
@@ -118,6 +130,7 @@ class ObservationsTabWidget(QWidget):
         param_group = QGroupBox("Paramètre à afficher")
         param_form = QFormLayout()
         self.combo_parametre = QComboBox()
+        _cap_combo_width(self.combo_parametre)
         for code, info in OBS_PARAMS_MAP.items():
             unite = f" ({info['unite']})" if info["unite"] else ""
             self.combo_parametre.addItem(f"{info['label_fr']}{unite}", userData=code)
