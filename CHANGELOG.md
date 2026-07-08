@@ -2,6 +2,15 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.14] - 2026-07-08
+
+- Corrige un autre cas du même symptôme (panneau trop large, non
+  redimensionnable) signalé après la vérification de la clé API : les
+  labels d'état AROME/Radar/Observations de l'onglet Configuration
+  n'avaient pas `setWordWrap(True)`, contrairement à tous les autres
+  labels dynamiques du plugin — un message de test un peu long (ex. les
+  erreurs HTTP détaillées) forçait le panneau à s'élargir.
+
 ## [0.3.13] - 2026-07-08
 
 - Confirmé en usage réel : AROME, Radar et l'exclusion mutuelle

@@ -101,6 +101,7 @@ class ConfigTabWidget(QWidget):
         status_layout = QVBoxLayout()
         for label in ("AROME", "Radar", "Observations"):
             lbl = QLabel(f"{label} : non testé")
+            lbl.setWordWrap(True)  # messages de test parfois longs (cf. erreurs HTTP détaillées)
             self._status_labels[label] = lbl
             status_layout.addWidget(lbl)
         status_group.setLayout(status_layout)
