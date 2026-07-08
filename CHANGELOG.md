@@ -2,6 +2,22 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.6] - 2026-07-06
+
+- Radar : la légende de la palette OPERA (12 classes) s'affiche maintenant
+  dans l'encadré titre/pas de temps, comme pour AROME. Nouveau module
+  `radar_styles.py` (palette + rendu + légende), sur le même principe que
+  `arome_styles.py`.
+- AROME : le run (réseau de référence, ex. "03/07 18h00") apparaît
+  désormais dans le nom de la couche (chargement simple), le nom du groupe
+  et le titre de l'encadré (série temporelle).
+- Contour Réunion et fond OpenStreetMap : une nouvelle méthode
+  `ensure_base_layers()` les réajoute s'ils sont absents, appelée après
+  chaque génération de donnée par un des trois modules (pas seulement au
+  chargement de projet). Corrige un cas où leur suppression manuelle, ou
+  la création d'un nouveau projet dans la même session QGIS, les laissait
+  durablement absents jusqu'au redémarrage de QGIS.
+
 ## [0.3.5] - 2026-07-06
 
 - Radar : les échéances sont maintenant animables via le Temporal Controller

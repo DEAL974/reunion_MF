@@ -86,10 +86,11 @@ class ObservationsTabWidget(QWidget):
     LAYER_NAME = "Observations Réunion (24h)"
     ID_DEPARTEMENT = "974"
 
-    def __init__(self, iface: QgisInterface, overlay_manager=None, parent=None):
+    def __init__(self, iface: QgisInterface, overlay_manager=None, ensure_base_layers=None, parent=None):
         super().__init__(parent)
         self.iface = iface
         self._overlay_manager = overlay_manager
+        self._ensure_base_layers = ensure_base_layers
         self._current_layer: QgsVectorLayer | None = None
         self._current_layer_id: str | None = None
         self._build_ui()
@@ -191,6 +192,8 @@ class ObservationsTabWidget(QWidget):
         self._apply_temporal_properties(layer)
 
         QgsProject.instance().addMapLayer(layer)
+        if self._ensure_base_layers is not None:
+            self._ensure_base_layers()
 
         temporal_note = self._configure_temporal_extent_from_layer(layer)
 

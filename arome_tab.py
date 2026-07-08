@@ -342,10 +342,11 @@ class LoadTimeSeriesTask(QgsTask):
 class AromeTabWidget(QWidget):
     """Contenu de l'onglet AROME (intégré dans le dock partagé Réunion MF)."""
 
-    def __init__(self, iface: QgisInterface, overlay_manager=None, parent=None):
+    def __init__(self, iface: QgisInterface, overlay_manager=None, ensure_base_layers=None, parent=None):
         super().__init__(parent)
         self.iface = iface
         self._overlay_manager = overlay_manager
+        self._ensure_base_layers = ensure_base_layers
 
         # état de découverte courant (peuplé après "Analyser le paquet")
         self._discovered_bands: list[dict] = []
@@ -593,6 +594,15 @@ class AromeTabWidget(QWidget):
 
         element = band["element"]
         layer_name = f"AROME_{element}_{mode}_H{echeance:03d}"
+        run_str = None
+        if self._discovered_reference_time:
+            try:
+                run_str = format_local_time(_reference_time_to_datetime(self._discovered_reference_time))
+            except ValueError:
+                run_str = None
+        if run_str:
+            layer_name += f" (run {run_str})"
+
         layer = QgsRasterLayer(str(task.result_path), layer_name)
 
         if not layer.isValid():
@@ -603,6 +613,8 @@ class AromeTabWidget(QWidget):
         apply_style(layer, element, opacity=opacity)
 
         QgsProject.instance().addMapLayer(layer)
+        if self._ensure_base_layers is not None:
+            self._ensure_base_layers()
         self.label_statut.setText(f"Couche chargée : {layer_name}")
         self.iface.messageBar().pushMessage(
             "AROME Outre-Mer", f"Couche '{layer_name}' chargée avec succès.",
@@ -682,9 +694,6 @@ class AromeTabWidget(QWidget):
         opacity = self.slider_opacite.value() / 100.0
         project = QgsProject.instance()
         root = project.layerTreeRoot()
-        group_name = f"AROME {label_fr} {task.echeance_max_heures}h"
-        group = root.insertGroup(0, group_name)
-        group.setExpanded(False)  # replié par défaut
 
         pas_heures = 1  # cohérent avec get_time_series (pas fixe pour l'instant)
         reference_dt = None
@@ -693,6 +702,13 @@ class AromeTabWidget(QWidget):
                 reference_dt = _reference_time_to_datetime(self._discovered_reference_time)
             except ValueError:
                 reference_dt = None  # format inattendu : on continue sans le Temporal Controller
+        run_str = format_local_time(reference_dt) if reference_dt is not None else None
+
+        group_name = f"AROME {label_fr} {task.echeance_max_heures}h"
+        if run_str:
+            group_name += f" — run {run_str}"
+        group = root.insertGroup(0, group_name)
+        group.setExpanded(False)  # replié par défaut
 
         for echeance, path in task.results:
             if reference_dt is not None:
@@ -719,6 +735,9 @@ class AromeTabWidget(QWidget):
             project.addMapLayer(layer, addToLegend=False)
             group.addLayer(layer)
 
+        if task.results and self._ensure_base_layers is not None:
+            self._ensure_base_layers()
+
         temporal_note = ""
         panel_opened = False
         if reference_dt is not None and task.results:
@@ -743,7 +762,8 @@ class AromeTabWidget(QWidget):
 
             panel_opened = self._try_open_temporal_controller_panel()
             if self._overlay_manager is not None:
-                self._overlay_manager.set_label(label_fr)
+                overlay_label = f"{label_fr} — run {run_str}" if run_str else label_fr
+                self._overlay_manager.set_label(overlay_label)
                 self._overlay_manager.set_legend_pixmap(build_legend_pixmap(element, unit))
                 self._overlay_manager.ensure_active()
                 self._overlay_manager.refresh_now()

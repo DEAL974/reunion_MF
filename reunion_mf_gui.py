@@ -55,6 +55,19 @@ class ReunionMFDockWidget(QDockWidget):
         projet précédent sans être retraités.
         """
         self._ensure_project_crs()
+        self.ensure_base_layers()
+
+    def ensure_base_layers(self) -> None:
+        """
+        (Ré)ajoute le contour Réunion et le fond OSM s'ils sont absents du
+        projet. Appelé au chargement de projet, mais aussi par chaque
+        onglet après génération de données (AROME/Radar/Observations) :
+        readProject ne se déclenche ni sur "Nouveau projet" ni si
+        l'utilisateur supprime ces couches en cours de session, ces deux
+        cas laissaient sinon le contour/fond de carte durablement absents
+        jusqu'au redémarrage de QGIS. _load_reunion_contour/_load_osm_basemap
+        sont déjà idempotents (vérifient l'absence avant de recréer).
+        """
         self._load_reunion_contour()
         self._load_osm_basemap()
 
@@ -67,9 +80,15 @@ class ReunionMFDockWidget(QDockWidget):
         self.tabs = QTabWidget()
 
         self.config_tab = ConfigTabWidget(self.iface, on_unlock_changed=self._on_unlock_changed)
-        self.arome_tab = AromeTabWidget(self.iface, overlay_manager=self.overlay_manager)
-        self.radar_tab = RadarTabWidget(self.iface, overlay_manager=self.overlay_manager)
-        self.observations_tab = ObservationsTabWidget(self.iface, overlay_manager=self.overlay_manager)
+        self.arome_tab = AromeTabWidget(
+            self.iface, overlay_manager=self.overlay_manager, ensure_base_layers=self.ensure_base_layers
+        )
+        self.radar_tab = RadarTabWidget(
+            self.iface, overlay_manager=self.overlay_manager, ensure_base_layers=self.ensure_base_layers
+        )
+        self.observations_tab = ObservationsTabWidget(
+            self.iface, overlay_manager=self.overlay_manager, ensure_base_layers=self.ensure_base_layers
+        )
 
         self.tabs.addTab(self.config_tab, "Configuration")
         self.tabs.addTab(self.arome_tab, "AROME (prévisions)")
