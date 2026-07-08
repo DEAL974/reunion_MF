@@ -21,11 +21,10 @@ from qgis.core import (
     QgsInterval,
     QgsProject,
     QgsRasterLayer,
-    QgsRasterLayerTemporalProperties,
     QgsTask,
 )
 from qgis.gui import QgisInterface
-from qgis.PyQt.QtCore import QDateTime, Qt
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QStandardItem, QStandardItemModel
 from qgis.PyQt.QtWidgets import (
     QComboBox,
@@ -50,7 +49,7 @@ from .arome_core import (
     AromeService,
 )
 from .arome_styles import apply_style, build_legend_pixmap
-from .common import format_local_time, utc_datetime_to_local_qdatetime
+from .common import apply_fixed_temporal_range, format_local_time, utc_datetime_to_local_qdatetime
 from .common import get_api_key, get_cache_root
 
 SERIE_TEMPORELLE_DEFAULT_HEURES = 24
@@ -65,18 +64,6 @@ SERIE_TEMPORELLE_OPTIONS_HEURES = [6, 12, 24, 36, 48]
 def _reference_time_to_datetime(reference_time: str) -> datetime:
     """Parse une chaîne ISO 8601 UTC ('2026-07-03T18:00:00Z') en datetime."""
     return datetime.strptime(reference_time, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-
-
-def _apply_temporal_range(layer: QgsRasterLayer, start: QDateTime, end: QDateTime) -> None:
-    """
-    Configure la couche pour le Temporal Controller QGIS : plage temporelle
-    fixe (une échéance = une tranche horaire). Point non testé en dehors
-    de QGIS réel (signature d'API à vérifier au premier essai).
-    """
-    temporal_props = layer.temporalProperties()
-    temporal_props.setMode(QgsRasterLayerTemporalProperties.ModeFixedTemporalRange)
-    temporal_props.setFixedTemporalRange(QgsDateTimeRange(start, end))
-    temporal_props.setIsActive(True)
 
 
 # Ordre d'affichage des catégories et libellés lisibles.
@@ -723,7 +710,7 @@ class AromeTabWidget(QWidget):
             if reference_dt is not None:
                 start_dt = reference_dt + timedelta(hours=echeance)
                 end_dt = start_dt + timedelta(hours=pas_heures)
-                _apply_temporal_range(
+                apply_fixed_temporal_range(
                     layer,
                     utc_datetime_to_local_qdatetime(start_dt),
                     utc_datetime_to_local_qdatetime(end_dt),

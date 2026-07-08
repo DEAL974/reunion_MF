@@ -68,7 +68,7 @@ class ReunionMFDockWidget(QDockWidget):
 
         self.config_tab = ConfigTabWidget(self.iface, on_unlock_changed=self._on_unlock_changed)
         self.arome_tab = AromeTabWidget(self.iface, overlay_manager=self.overlay_manager)
-        self.radar_tab = RadarTabWidget(self.iface)
+        self.radar_tab = RadarTabWidget(self.iface, overlay_manager=self.overlay_manager)
         self.observations_tab = ObservationsTabWidget(self.iface, overlay_manager=self.overlay_manager)
 
         self.tabs.addTab(self.config_tab, "Configuration")

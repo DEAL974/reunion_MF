@@ -2,6 +2,19 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.5] - 2026-07-06
+
+- Radar : les échéances sont maintenant animables via le Temporal Controller
+  (plage temporelle fixe par couche + `setTemporalExtents`/`setFrameDuration`
+  recalculés à chaque actualisation), sur le même principe qu'AROME. Le
+  module Radar n'avait jamais eu cette configuration jusqu'ici.
+- Radar : nouvelle palette à 12 classes façon composite OPERA
+  (bleu→vert→jaune→orange→rouge→magenta→blanc), remplaçant le dégradé bleu
+  monochrome initial. Seuils fournis en mm/h convertis en mm/5 min pour
+  correspondre à l'unité réelle des données (ACRR).
+- Factorisation : `apply_fixed_temporal_range` déplacé dans `common.py`,
+  partagé entre AROME et Radar au lieu d'être dupliqué.
+
 ## [0.3.4] - 2026-07-06
 
 - Corrige un bug d'affichage signalé en usage réel : l'encadré titre/pas de

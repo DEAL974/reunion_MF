@@ -13,9 +13,13 @@ API elle-même ne conservant que 20h, cf. radar_core.RADAR_RETENTION_HOURS).
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from qgis.core import (
     Qgis,
     QgsApplication,
+    QgsDateTimeRange,
+    QgsInterval,
     QgsProject,
     QgsRasterLayer,
     QgsTask,
@@ -32,8 +36,17 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
 )
 
-from .common import format_local_time, get_api_key, get_cache_root
+from .common import (
+    apply_fixed_temporal_range,
+    format_local_time,
+    get_api_key,
+    get_cache_root,
+    try_open_temporal_controller_panel,
+    utc_datetime_to_local_qdatetime,
+)
 from .radar_core import RADAR_RETENTION_HOURS, RadarCoreError, RadarService
+
+RADAR_STEP_MINUTES = 5
 
 
 def _make_service() -> RadarService | None:
@@ -69,10 +82,13 @@ class RadarTabWidget(QWidget):
 
     GROUP_NAME = "Radar précipitations Réunion"
 
-    def __init__(self, iface: QgisInterface, parent=None):
+    def __init__(self, iface: QgisInterface, overlay_manager=None, parent=None):
         super().__init__(parent)
         self.iface = iface
+        self._overlay_manager = overlay_manager
         self._loaded_timestamps: set[str] = set()  # évite les doublons de couches
+        self._min_ts = None  # bornes cumulées de l'historique local, pour le Temporal Controller
+        self._max_ts = None
         self._build_ui()
 
     # -- construction de l'interface -----------------------------------
@@ -170,12 +186,38 @@ class RadarTabWidget(QWidget):
 
             self._apply_default_style(layer, opacity)
 
+            start_local = utc_datetime_to_local_qdatetime(ts)
+            end_local = utc_datetime_to_local_qdatetime(ts + timedelta(minutes=RADAR_STEP_MINUTES))
+            apply_fixed_temporal_range(layer, start_local, end_local)
+
             project.addMapLayer(layer, addToLegend=False)
             group.addLayer(layer)
             self._loaded_timestamps.add(key)
+            self._min_ts = ts if self._min_ts is None else min(self._min_ts, ts)
+            self._max_ts = ts if self._max_ts is None else max(self._max_ts, ts)
             nb_ajoutees += 1
 
         group.setExpanded(False)
+
+        panel_opened = False
+        if self._min_ts is not None and nb_ajoutees > 0:
+            overall_start = utc_datetime_to_local_qdatetime(self._min_ts)
+            overall_end = utc_datetime_to_local_qdatetime(
+                self._max_ts + timedelta(minutes=RADAR_STEP_MINUTES)
+            )
+            try:
+                controller = self.iface.mapCanvas().temporalController()
+                controller.setTemporalExtents(QgsDateTimeRange(overall_start, overall_end))
+                controller.setFrameDuration(QgsInterval(RADAR_STEP_MINUTES * 60))
+            except AttributeError:
+                pass  # Temporal Controller reste utilisable manuellement
+
+            panel_opened = try_open_temporal_controller_panel(self.iface)
+            if self._overlay_manager is not None:
+                self._overlay_manager.set_label("Radar Réunion")
+                self._overlay_manager.set_legend_pixmap(None)  # efface une éventuelle légende AROME résiduelle
+                self._overlay_manager.ensure_active()
+                self._overlay_manager.refresh_now()
 
         if nb_ajoutees == 0:
             self.label_statut.setText(
@@ -183,9 +225,13 @@ class RadarTabWidget(QWidget):
                 "(déjà à jour depuis le dernier rafraîchissement)."
             )
         else:
+            note = "" if panel_opened else (
+                " Pour l'animer, ouvre le panneau Temporal Controller "
+                "(Vue → Panneaux → Contrôleur temporel)."
+            )
             self.label_statut.setText(
                 f"{nb_ajoutees} nouvelle(s) échéance(s) ajoutée(s) au groupe "
-                f"'{self.GROUP_NAME}'."
+                f"'{self.GROUP_NAME}'.{note}"
             )
         self.iface.messageBar().pushMessage(
             "Radar Réunion",
@@ -198,32 +244,58 @@ class RadarTabWidget(QWidget):
     @staticmethod
     def _apply_default_style(layer: QgsRasterLayer, opacity: float) -> None:
         """
-        Style simple dégradé transparent -> bleu foncé selon l'intensité
-        de précipitation (mm sur 5 min). Séparé de arome_styles.py car la
-        sémantique (cumul court, échelle différente) diffère des paramètres
-        AROME.
+        Style à classes discrètes façon composite radar OPERA (palette
+        fournie par l'utilisateur, 12 classes bleu->vert->jaune->orange->
+        rouge->magenta->blanc). Les seuils de référence sont exprimés en
+        mm/h (convention OPERA) ; la couche stocke un cumul sur 5 min
+        (ACRR), donc chaque seuil est divisé par 12 pour rester cohérent
+        avec l'unité réelle des données. Séparé de arome_styles.py car la
+        sémantique (cumul court, échelle différente) diffère des
+        paramètres AROME.
         """
         from qgis.core import QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer
         from qgis.PyQt.QtGui import QColor
 
-        stops = [
-            (0.0, (255, 255, 255, 0)),
-            (0.2, (198, 219, 239, 180)),
-            (1.0, (107, 174, 214, 220)),
-            (4.0, (33, 113, 181, 240)),
-            (10.0, (8, 48, 107, 255)),
+        # (seuil bas de la classe, en mm/h ; couleur RGBA de la classe)
+        classes_mm_par_heure = [
+            (0.5, (191, 239, 255, 255)),    # >= 0,5 mm/h : cyan très pâle
+            (1.0, (120, 220, 255, 255)),    # >= 1 mm/h : cyan clair
+            (1.6, (52, 152, 235, 255)),     # >= 1,6 mm/h : bleu ciel
+            (2.8, (30, 60, 200, 255)),      # >= 2,8 mm/h : bleu roi
+            (4.7, (10, 110, 40, 255)),      # >= 4,7 mm/h : vert foncé
+            (8.0, (40, 200, 40, 255)),      # >= 8 mm/h : vert vif
+            (10.0, (255, 235, 0, 255)),     # >= 10 mm/h : jaune
+            (25.0, (255, 150, 0, 255)),     # >= 25 mm/h : orange
+            (30.0, (230, 20, 20, 255)),     # >= 30 mm/h : rouge
+            (62.0, (230, 0, 230, 255)),     # >= 62 mm/h : magenta vif
+            (100.0, (255, 170, 220, 255)),  # >= 100 mm/h : rose pâle
+            (170.0, (255, 255, 255, 255)),  # >= 170 mm/h : blanc
         ]
+        MM_PAR_HEURE_VERS_MM_5MIN = 5 / 60
+
+        items = [
+            # en dessous du premier seuil : transparent (pas de pluie significative)
+            QgsColorRampShader.ColorRampItem(
+                classes_mm_par_heure[0][0] * MM_PAR_HEURE_VERS_MM_5MIN, QColor(255, 255, 255, 0)
+            )
+        ]
+        for i, (_, color) in enumerate(classes_mm_par_heure):
+            is_last = i == len(classes_mm_par_heure) - 1
+            upper_bound = (
+                999.0 if is_last
+                else classes_mm_par_heure[i + 1][0] * MM_PAR_HEURE_VERS_MM_5MIN
+            )
+            items.append(QgsColorRampShader.ColorRampItem(upper_bound, QColor(*color)))
+
         color_ramp = QgsColorRampShader()
-        color_ramp.setColorRampType(QgsColorRampShader.Type.Interpolated)
-        color_ramp.setColorRampItemList([
-            QgsColorRampShader.ColorRampItem(v, QColor(r, g, b, a)) for v, (r, g, b, a) in stops
-        ])
+        color_ramp.setColorRampType(QgsColorRampShader.Type.Discrete)
+        color_ramp.setColorRampItemList(items)
         shader = QgsRasterShader()
         shader.setRasterShaderFunction(color_ramp)
 
         renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1, shader)
-        renderer.setClassificationMin(stops[0][0])
-        renderer.setClassificationMax(stops[-1][0])
+        renderer.setClassificationMin(0.0)
+        renderer.setClassificationMax(items[-1].value)
         layer.setRenderer(renderer)
         layer.renderer().setOpacity(opacity)
         layer.triggerRepaint()

@@ -43,6 +43,22 @@ def utc_datetime_to_local_qdatetime(dt: datetime) -> QDateTime:
     return qdt_utc.toOffsetFromUtc(REUNION_UTC_OFFSET_HOURS * 3600)
 
 
+def apply_fixed_temporal_range(layer, start: QDateTime, end: QDateTime) -> None:
+    """
+    Configure une couche raster pour le Temporal Controller QGIS : plage
+    temporelle fixe (une échéance/un pas de temps = une tranche horaire).
+    Partagé entre AROME et Radar, les deux modules rasters temporels du
+    plugin (Observations utilise un mécanisme différent, propre aux
+    couches vectorielles : ModeFeatureDateTimeInstantFromField).
+    """
+    from qgis.core import QgsDateTimeRange, QgsRasterLayerTemporalProperties
+
+    temporal_props = layer.temporalProperties()
+    temporal_props.setMode(QgsRasterLayerTemporalProperties.ModeFixedTemporalRange)
+    temporal_props.setFixedTemporalRange(QgsDateTimeRange(start, end))
+    temporal_props.setIsActive(True)
+
+
 def get_api_key() -> str:
     """Lit la clé API Météo-France partagée (AROME + Radar utilisent le même compte)."""
     return QgsSettings().value(f"{SETTINGS_GROUP}/api_key", "", type=str)
