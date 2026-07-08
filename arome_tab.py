@@ -341,11 +341,15 @@ class LoadTimeSeriesTask(QgsTask):
 class AromeTabWidget(QWidget):
     """Contenu de l'onglet AROME (intégré dans le dock partagé Réunion MF)."""
 
-    def __init__(self, iface: QgisInterface, overlay_manager=None, ensure_base_layers=None, parent=None):
+    def __init__(
+        self, iface: QgisInterface, overlay_manager=None, ensure_base_layers=None,
+        set_active_temporal_module=None, parent=None,
+    ):
         super().__init__(parent)
         self.iface = iface
         self._overlay_manager = overlay_manager
         self._ensure_base_layers = ensure_base_layers
+        self._set_active_temporal_module = set_active_temporal_module
 
         # état de découverte courant (peuplé après "Analyser le paquet")
         self._discovered_bands: list[dict] = []
@@ -749,6 +753,8 @@ class AromeTabWidget(QWidget):
             try:
                 controller = self.iface.mapCanvas().temporalController()
                 configure_temporal_animation(controller, overall_start, overall_end, pas_heures * 3600)
+                if self._set_active_temporal_module is not None:
+                    self._set_active_temporal_module("arome")
             except AttributeError:
                 # API légèrement différente selon la version QGIS : le
                 # Temporal Controller reste utilisable manuellement même

@@ -83,11 +83,15 @@ class RadarTabWidget(QWidget):
 
     GROUP_NAME = "Radar précipitations Réunion"
 
-    def __init__(self, iface: QgisInterface, overlay_manager=None, ensure_base_layers=None, parent=None):
+    def __init__(
+        self, iface: QgisInterface, overlay_manager=None, ensure_base_layers=None,
+        set_active_temporal_module=None, parent=None,
+    ):
         super().__init__(parent)
         self.iface = iface
         self._overlay_manager = overlay_manager
         self._ensure_base_layers = ensure_base_layers
+        self._set_active_temporal_module = set_active_temporal_module
         self._loaded_layer_ids: dict[str, str] = {}  # ts.isoformat() -> id de couche, évite les doublons
         self._min_ts = None  # bornes cumulées de l'historique local, pour le Temporal Controller
         self._max_ts = None
@@ -223,6 +227,8 @@ class RadarTabWidget(QWidget):
                 configure_temporal_animation(
                     controller, overall_start, overall_end, RADAR_STEP_MINUTES * 60
                 )
+                if self._set_active_temporal_module is not None:
+                    self._set_active_temporal_module("radar")
             except AttributeError:
                 pass  # Temporal Controller reste utilisable manuellement
 

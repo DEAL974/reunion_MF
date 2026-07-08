@@ -2,6 +2,19 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.12] - 2026-07-08
+
+- AROME et Radar s'excluent mutuellement sur le Temporal Controller,
+  partagé par tout le canevas QGIS : quand l'un des deux est (ré)animé,
+  ses couches temporelles sont réactivées et celles de l'autre module
+  désactivées (`isActive(False)`). Corrige un effet de bord confirmé en
+  usage réel après correction du décalage horaire : avec les deux
+  modules chargés simultanément, animer AROME (pas d'1h) faisait
+  apparaître les couches Radar (fenêtre de 5 min) pendant toute la
+  frame d'1h à chaque fois que leurs plages se recoupaient, bien plus
+  longtemps que leur vraie durée. Nouvelle méthode
+  `ReunionMFDockWidget.set_active_temporal_module()`.
+
 ## [0.3.11] - 2026-07-08
 
 - Corrige la cause racine finale de l'absence d'animation, trouvée par

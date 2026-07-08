@@ -71,6 +71,38 @@ class ReunionMFDockWidget(QDockWidget):
         self._load_reunion_contour()
         self._load_osm_basemap()
 
+    def set_active_temporal_module(self, module: str) -> None:
+        """
+        Un seul Temporal Controller est partagé par tout le canevas QGIS :
+        animer AROME affiche aussi, le temps d'une frame large (ex. 1h),
+        toute couche Radar active dont la fenêtre (5 min) recoupe cette
+        frame - au mauvais moment, puisqu'elle reste visible sur toute la
+        durée de la frame plutôt que ses 5 vraies minutes (et
+        réciproquement). Pour l'éviter, désactive isActive() sur les
+        couches temporelles de l'AUTRE module quand `module` ("arome" ou
+        "radar") vient d'être (re)chargé, et réactive les siennes.
+        """
+        from qgis.core import QgsLayerTreeGroup
+
+        root = QgsProject.instance().layerTreeRoot()
+        for node in root.children():
+            if not isinstance(node, QgsLayerTreeGroup):
+                continue
+
+            is_arome_group = node.name().startswith("AROME ")
+            is_radar_group = node.name() == RadarTabWidget.GROUP_NAME
+            if not (is_arome_group or is_radar_group):
+                continue
+
+            should_be_active = (module == "arome" and is_arome_group) or (module == "radar" and is_radar_group)
+            for tree_layer in node.findLayers():
+                layer = tree_layer.layer()
+                if layer is None:
+                    continue
+                temporal_props = layer.temporalProperties()
+                if temporal_props is not None:
+                    temporal_props.setIsActive(should_be_active)
+
     def _build_ui(self) -> None:
         container = QWidget()
         layout = QVBoxLayout()
@@ -81,10 +113,16 @@ class ReunionMFDockWidget(QDockWidget):
 
         self.config_tab = ConfigTabWidget(self.iface, on_unlock_changed=self._on_unlock_changed)
         self.arome_tab = AromeTabWidget(
-            self.iface, overlay_manager=self.overlay_manager, ensure_base_layers=self.ensure_base_layers
+            self.iface,
+            overlay_manager=self.overlay_manager,
+            ensure_base_layers=self.ensure_base_layers,
+            set_active_temporal_module=self.set_active_temporal_module,
         )
         self.radar_tab = RadarTabWidget(
-            self.iface, overlay_manager=self.overlay_manager, ensure_base_layers=self.ensure_base_layers
+            self.iface,
+            overlay_manager=self.overlay_manager,
+            ensure_base_layers=self.ensure_base_layers,
+            set_active_temporal_module=self.set_active_temporal_module,
         )
         self.observations_tab = ObservationsTabWidget(
             self.iface, overlay_manager=self.overlay_manager, ensure_base_layers=self.ensure_base_layers
