@@ -201,7 +201,10 @@ class RadarTabWidget(QWidget):
 
         group.setExpanded(False)
 
-        if nb_ajoutees > 0 and self._ensure_base_layers is not None:
+        # Toujours vérifié, même si aucune nouvelle échéance n'a été ajoutée
+        # (actualisation "à jour") : l'action a réussi, l'habillage doit
+        # rester présent indépendamment de l'arrivée ou non de données neuves.
+        if self._ensure_base_layers is not None:
             self._ensure_base_layers()
 
         panel_opened = False

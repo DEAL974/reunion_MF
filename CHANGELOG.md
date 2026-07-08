@@ -2,6 +2,16 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.7] - 2026-07-08
+
+- Corrige le chevauchement de texte dans la légende OPERA du Radar
+  (préfixe "mm/h" + seuils sur deux rangées bien séparées, au lieu de
+  trois rangées trop compactes dans l'espace de l'overlay).
+- Corrige le réajout du contour Réunion / fond OSM pour le Radar :
+  l'appel à `ensure_base_layers()` était sauté quand l'actualisation ne
+  ramenait aucune échéance nouvelle ("déjà à jour"), alors que l'action
+  avait bien réussi.
+
 ## [0.3.6] - 2026-07-06
 
 - Radar : la légende de la palette OPERA (12 classes) s'affiche maintenant

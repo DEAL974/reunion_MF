@@ -73,45 +73,55 @@ def apply_style(layer: QgsRasterLayer, opacity: float = 0.8) -> None:
     layer.triggerRepaint()
 
 
-def build_legend_pixmap(width: int = 240, height: int = 46):
+def build_legend_pixmap(width: int = 250, height: int = 36):
     """
-    Construit une image de légende (12 blocs de couleur + seuils en mm/h)
-    pour affichage en overlay flottant sur le canevas, sur le même
-    principe que arome_styles.build_legend_pixmap.
+    Construit une image de légende (préfixe "mm/h" + 12 blocs de couleur
+    avec leur seuil bas) pour affichage en overlay flottant sur le
+    canevas, sur le même principe que arome_styles.build_legend_pixmap.
+    Deux rangées seulement (barre puis seuils) pour éviter tout
+    chevauchement de texte dans l'espace réduit de l'overlay.
     """
+    from qgis.PyQt.QtCore import QRect
     from qgis.PyQt.QtCore import Qt as _Qt
     from qgis.PyQt.QtGui import QFont, QPainter, QPixmap
 
-    margin, bar_height = 4, 14
+    margin, bar_height, label_height = 4, 14, 11
+    prefix_width = 26
     pixmap = QPixmap(width, height)
     pixmap.fill(_Qt.GlobalColor.transparent)
 
     painter = QPainter(pixmap)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-    n = len(OPERA_CLASSES)
-    bar_width = width - 2 * margin
-    segment_width = bar_width / n
-
     font = QFont()
     font.setPointSize(6)
     painter.setFont(font)
 
-    for i, (threshold, color) in enumerate(OPERA_CLASSES):
-        x = margin + i * segment_width
-        painter.setPen(QColor(120, 120, 120))
-        painter.setBrush(QColor(*color))
-        painter.drawRect(int(x), margin, int(segment_width) + 1, bar_height)
-
-        label = f"{threshold:g}"
-        painter.setPen(QColor(20, 20, 20))
-        painter.drawText(
-            int(x), margin + bar_height + 11, int(segment_width) + 4, 10,
-            _Qt.AlignmentFlag.AlignHCenter, label,
-        )
+    bar_y = margin
+    label_y = margin + bar_height + 1
 
     painter.setPen(QColor(30, 30, 30))
-    painter.drawText(margin, margin + bar_height + 22, "seuils en mm/h (taux horaire équivalent)")
+    painter.drawText(
+        QRect(margin, bar_y, prefix_width, bar_height), _Qt.AlignmentFlag.AlignCenter, "mm/h"
+    )
+
+    n = len(OPERA_CLASSES)
+    bar_x0 = margin + prefix_width
+    bar_width = width - margin - bar_x0
+    segment_width = bar_width / n
+
+    for i, (threshold, color) in enumerate(OPERA_CLASSES):
+        x = bar_x0 + i * segment_width
+
+        painter.setPen(QColor(120, 120, 120))
+        painter.setBrush(QColor(*color))
+        painter.drawRect(int(x), bar_y, int(segment_width) + 1, bar_height)
+
+        painter.setPen(QColor(20, 20, 20))
+        painter.drawText(
+            QRect(int(x) - 2, label_y, int(segment_width) + 4, label_height),
+            _Qt.AlignmentFlag.AlignHCenter, f"{threshold:g}",
+        )
 
     painter.end()
     return pixmap
