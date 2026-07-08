@@ -2,6 +2,17 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.15] - 2026-07-08
+
+- Corrige l'encadré titre (Radar et AROME) affiché avec 4h de retard
+  sur l'heure réelle des couches — effet de bord du correctif du
+  décalage horaire en 0.3.11 : le Temporal Controller reçoit désormais
+  des `QDateTime` UTC purs (sans décalage), mais `TimeOverlayManager`
+  affichait encore `time_range.begin()` tel quel, sans reconversion en
+  heure locale, avant de lui apposer le libellé "(heure locale,
+  GMT+4)". Ajoute la conversion explicite `.toOffsetFromUtc(...)` avant
+  formatage.
+
 ## [0.3.14] - 2026-07-08
 
 - Corrige un autre cas du même symptôme (panneau trop large, non

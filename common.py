@@ -226,7 +226,14 @@ class TimeOverlayManager:
         if self._label_widget is None:
             return
         try:
-            start_str = time_range.begin().toString("dd/MM/yyyy HH:mm")
+            # time_range.begin() est en UTC pur depuis que
+            # configure_temporal_animation() alimente le Temporal
+            # Controller avec des QDateTime non décalés (cf. correctif du
+            # décalage de 4h, 2026-07-08) : reconversion explicite en
+            # heure locale avant affichage, sinon le libellé "(heure
+            # locale, GMT+4)" est apposé sur des chiffres encore en UTC.
+            local_begin = time_range.begin().toOffsetFromUtc(REUNION_UTC_OFFSET_HOURS * 3600)
+            start_str = local_begin.toString("dd/MM/yyyy HH:mm")
         except Exception:
             return
 
