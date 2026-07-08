@@ -751,6 +751,11 @@ class AromeTabWidget(QWidget):
                 controller = self.iface.mapCanvas().temporalController()
                 controller.setTemporalExtents(QgsDateTimeRange(overall_start, overall_end))
                 controller.setFrameDuration(QgsInterval(pas_heures * 3600))
+                # Ramène le curseur "courant" au début de la nouvelle plage :
+                # sans ça il reste où un autre module (ex: Radar, fenêtre de
+                # 15 min) l'a laissé, potentiellement hors de la plage AROME
+                # fraîchement configurée.
+                controller.rewindToStart()
             except AttributeError:
                 # API légèrement différente selon la version QGIS : le
                 # Temporal Controller reste utilisable manuellement même

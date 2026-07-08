@@ -2,6 +2,18 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.8] - 2026-07-08
+
+- Corrige un bug remonté en usage réel : après avoir animé AROME puis
+  basculé sur Radar (ou l'inverse), les couches du second module
+  n'apparaissaient jamais tant que le Temporal Controller était actif —
+  le curseur "courant" du contrôleur restait positionné là où l'autre
+  module l'avait laissé, hors de la nouvelle plage (généralement bien
+  plus étroite pour le Radar : 15 min contre plusieurs heures pour
+  AROME). `controller.rewindToStart()` est maintenant appelé après
+  chaque reconfiguration de `setTemporalExtents`/`setFrameDuration`,
+  dans les deux modules.
+
 ## [0.3.7] - 2026-07-08
 
 - Corrige le chevauchement de texte dans la légende OPERA du Radar

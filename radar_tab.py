@@ -217,6 +217,12 @@ class RadarTabWidget(QWidget):
                 controller = self.iface.mapCanvas().temporalController()
                 controller.setTemporalExtents(QgsDateTimeRange(overall_start, overall_end))
                 controller.setFrameDuration(QgsInterval(RADAR_STEP_MINUTES * 60))
+                # Sans ça, le curseur "courant" du contrôleur reste où il
+                # était laissé par un autre module (ex: AROME, plage de
+                # plusieurs heures) : hors de la fenêtre radar (15 min),
+                # aucune couche ne s'affiche tant qu'on n'a pas rembobiné
+                # manuellement. Bug remonté en usage réel (2026-07-08).
+                controller.rewindToStart()
             except AttributeError:
                 pass  # Temporal Controller reste utilisable manuellement
 
