@@ -18,8 +18,6 @@ from datetime import timedelta
 from qgis.core import (
     Qgis,
     QgsApplication,
-    QgsDateTimeRange,
-    QgsInterval,
     QgsProject,
     QgsRasterLayer,
     QgsTask,
@@ -38,6 +36,7 @@ from qgis.PyQt.QtWidgets import (
 
 from .common import (
     apply_fixed_temporal_range,
+    configure_temporal_animation,
     format_local_time,
     get_api_key,
     get_cache_root,
@@ -208,21 +207,20 @@ class RadarTabWidget(QWidget):
             self._ensure_base_layers()
 
         panel_opened = False
-        if self._min_ts is not None and nb_ajoutees > 0:
+        # Reconfiguré à chaque actualisation réussie, pas seulement quand
+        # une nouvelle échéance arrive : sinon un clic "déjà à jour" laisse
+        # en place le réglage d'un autre module (ex: AROME), et Radar reste
+        # inanimable tant qu'aucune donnée neuve n'est arrivée.
+        if self._min_ts is not None:
             overall_start = utc_datetime_to_local_qdatetime(self._min_ts)
             overall_end = utc_datetime_to_local_qdatetime(
                 self._max_ts + timedelta(minutes=RADAR_STEP_MINUTES)
             )
             try:
                 controller = self.iface.mapCanvas().temporalController()
-                controller.setTemporalExtents(QgsDateTimeRange(overall_start, overall_end))
-                controller.setFrameDuration(QgsInterval(RADAR_STEP_MINUTES * 60))
-                # Sans ça, le curseur "courant" du contrôleur reste où il
-                # était laissé par un autre module (ex: AROME, plage de
-                # plusieurs heures) : hors de la fenêtre radar (15 min),
-                # aucune couche ne s'affiche tant qu'on n'a pas rembobiné
-                # manuellement. Bug remonté en usage réel (2026-07-08).
-                controller.rewindToStart()
+                configure_temporal_animation(
+                    controller, overall_start, overall_end, RADAR_STEP_MINUTES * 60
+                )
             except AttributeError:
                 pass  # Temporal Controller reste utilisable manuellement
 

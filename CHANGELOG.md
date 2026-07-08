@@ -2,6 +2,20 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.9] - 2026-07-08
+
+- Corrige la cause racine du bug d'animation, diagnostiquée via un test
+  réel dans la console Python de QGIS : `temporalController().navigationMode()`
+  restait à `NavigationOff` (jamais activé explicitement par le plugin),
+  QGIS n'appliquait alors aucun filtrage temporel par couche. Ajoute un
+  appel explicite à `setNavigationMode(Animated)`, regroupé avec
+  `setTemporalExtents`/`setFrameDuration`/`rewindToStart` dans une
+  nouvelle fonction partagée `common.configure_temporal_animation`
+  (remplace la logique dupliquée entre AROME et Radar).
+- Radar : le contrôleur est reconfiguré à chaque actualisation réussie,
+  plus seulement quand une échéance neuve arrive — sinon un clic "déjà
+  à jour" laissait en place la configuration d'un autre module.
+
 ## [0.3.8] - 2026-07-08
 
 - Corrige un bug remonté en usage réel : après avoir animé AROME puis

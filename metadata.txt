@@ -2,7 +2,7 @@
 name=Réunion MF
 qgisMinimumVersion=3.28
 description=AROME overseas forecasts and precipitation radar mosaic (Météo-France) for Réunion Island, with native regional view, reprojected Réunion view (EPSG:2975), animated time series and near real-time radar updates.
-version=0.3.8
+version=0.3.9
 author=Cyriel Adnes (DEAL Réunion - SCETE-USIG)
 email=cyriel.adnes@developpement-durable.gouv.fr
 
@@ -30,7 +30,10 @@ deprecated=False
 server=False
 hasProcessingProvider=no
 
-changelog=0.3.8
+changelog=0.3.9
+    - AROME et Radar : le mode Animated du Temporal Controller est désormais activé explicitement (il restait sur NavigationOff, aucun filtrage temporel par couche ne s'appliquait alors). Radar reconfigure aussi le contrôleur à chaque actualisation réussie, plus seulement si une échéance neuve arrive.
+
+    0.3.8
     - AROME et Radar : corrige une couche temporelle qui ne s'affichait jamais (ou disparaissait) après avoir utilisé l'autre module - le curseur du Temporal Controller n'était pas remis au début de la nouvelle plage à chaque changement de module.
 
     0.3.7

@@ -17,8 +17,6 @@ from pathlib import Path
 from qgis.core import (
     Qgis,
     QgsApplication,
-    QgsDateTimeRange,
-    QgsInterval,
     QgsProject,
     QgsRasterLayer,
     QgsTask,
@@ -49,8 +47,8 @@ from .arome_core import (
     AromeService,
 )
 from .arome_styles import apply_style, build_legend_pixmap
-from .common import apply_fixed_temporal_range, format_local_time, utc_datetime_to_local_qdatetime
-from .common import get_api_key, get_cache_root
+from .common import apply_fixed_temporal_range, configure_temporal_animation, format_local_time
+from .common import get_api_key, get_cache_root, utc_datetime_to_local_qdatetime
 
 SERIE_TEMPORELLE_DEFAULT_HEURES = 24
 
@@ -749,13 +747,7 @@ class AromeTabWidget(QWidget):
             )
             try:
                 controller = self.iface.mapCanvas().temporalController()
-                controller.setTemporalExtents(QgsDateTimeRange(overall_start, overall_end))
-                controller.setFrameDuration(QgsInterval(pas_heures * 3600))
-                # Ramène le curseur "courant" au début de la nouvelle plage :
-                # sans ça il reste où un autre module (ex: Radar, fenêtre de
-                # 15 min) l'a laissé, potentiellement hors de la plage AROME
-                # fraîchement configurée.
-                controller.rewindToStart()
+                configure_temporal_animation(controller, overall_start, overall_end, pas_heures * 3600)
             except AttributeError:
                 # API légèrement différente selon la version QGIS : le
                 # Temporal Controller reste utilisable manuellement même

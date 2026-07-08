@@ -59,6 +59,28 @@ def apply_fixed_temporal_range(layer, start: QDateTime, end: QDateTime) -> None:
     temporal_props.setIsActive(True)
 
 
+def configure_temporal_animation(controller, start: QDateTime, end: QDateTime, frame_duration_seconds: float) -> None:
+    """
+    Configure le Temporal Controller QGIS pour animer une plage donnée.
+    Partagé entre AROME et Radar (mêmes 4 réglages nécessaires, mêmes
+    bugs sinon) :
+    - étendue et durée de frame ;
+    - mode de navigation Animated, explicitement — sans ça il reste sur
+      NavigationOff (valeur par défaut), auquel cas QGIS n'applique
+      aucun filtrage temporel par couche du tout (bug remonté en usage
+      réel, diagnostiqué via la console Python QGIS le 2026-07-08) ;
+    - rembobinage au début de la nouvelle plage, sinon le curseur reste
+      là où un autre module (plage différente) l'a laissé, susceptible
+      de tomber hors de cette nouvelle plage.
+    """
+    from qgis.core import QgsDateTimeRange, QgsInterval, QgsTemporalNavigationObject
+
+    controller.setTemporalExtents(QgsDateTimeRange(start, end))
+    controller.setFrameDuration(QgsInterval(frame_duration_seconds))
+    controller.setNavigationMode(QgsTemporalNavigationObject.NavigationMode.Animated)
+    controller.rewindToStart()
+
+
 def get_api_key() -> str:
     """Lit la clé API Météo-France partagée (AROME + Radar utilisent le même compte)."""
     return QgsSettings().value(f"{SETTINGS_GROUP}/api_key", "", type=str)
