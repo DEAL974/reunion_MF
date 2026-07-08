@@ -43,6 +43,23 @@ def utc_datetime_to_local_qdatetime(dt: datetime) -> QDateTime:
     return qdt_utc.toOffsetFromUtc(REUNION_UTC_OFFSET_HOURS * 3600)
 
 
+def utc_datetime_to_qdatetime(dt: datetime) -> QDateTime:
+    """
+    QDateTime UTC (sans décalage local), spécifiquement pour
+    QgsTemporalNavigationObject.setTemporalExtents(). Un QDateTime à
+    décalage +04:00 (utc_datetime_to_local_qdatetime) y perd son
+    décalage et se retrouve réinterprété tel quel comme de l'UTC,
+    décalant les frames de 4h par rapport aux plages fixes des couches
+    (elles correctement en +04:00) — bug diagnostiqué via la console
+    Python QGIS le 2026-07-08 (Temporal Controller parfaitement
+    configuré mais aucune frame ne recoupant jamais aucune couche
+    radar). Les plages de couches (apply_fixed_temporal_range) restent
+    elles construites via utc_datetime_to_local_qdatetime : seul le
+    contrôleur pose problème avec le décalage.
+    """
+    return QDateTime.fromSecsSinceEpoch(int(dt.timestamp()), Qt.TimeSpec.UTC)
+
+
 def apply_fixed_temporal_range(layer, start: QDateTime, end: QDateTime) -> None:
     """
     Configure une couche raster pour le Temporal Controller QGIS : plage

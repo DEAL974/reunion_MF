@@ -2,6 +2,25 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.11] - 2026-07-08
+
+- Corrige la cause racine finale de l'absence d'animation, trouvée par
+  comparaison directe des horodatages dans la console Python de QGIS :
+  les frames du contrôleur s'affichaient en UTC (`...Z`) alors que les
+  plages fixes des couches s'affichaient correctement en heure locale
+  (`...+04:00`) — mêmes chiffres d'horloge, mais des instants réels
+  décalés de 4h. `QgsTemporalNavigationObject.setTemporalExtents()`
+  perdait le décalage +04:00 des `QDateTime` transmis et les
+  réinterprétait tels quels comme de l'UTC. Pour Radar (fenêtre de
+  15-30 min), ce décalage empêchait tout recoupement frame/couche ; pour
+  AROME (pas d'1h sur 24h), un recoupement partiel restait possible,
+  d'où l'animation "fonctionnelle en apparence" mais pas réellement
+  correcte.
+  Ajoute `common.utc_datetime_to_qdatetime` (UTC pur, sans décalage) et
+  l'utilise pour les appels à `setTemporalExtents` uniquement — les
+  plages par couche restent construites en heure locale, qui elles
+  fonctionnaient déjà correctement.
+
 ## [0.3.10] - 2026-07-08
 
 - Corrige le vrai dernier maillon du bug d'animation radar, trouvé grâce

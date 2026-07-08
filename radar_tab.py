@@ -42,6 +42,7 @@ from .common import (
     get_cache_root,
     try_open_temporal_controller_panel,
     utc_datetime_to_local_qdatetime,
+    utc_datetime_to_qdatetime,
 )
 from .radar_core import RADAR_RETENTION_HOURS, RadarCoreError, RadarService
 from .radar_styles import apply_style, build_legend_pixmap
@@ -213,8 +214,8 @@ class RadarTabWidget(QWidget):
         # en place le réglage d'un autre module (ex: AROME), et Radar reste
         # inanimable tant qu'aucune donnée neuve n'est arrivée.
         if self._min_ts is not None:
-            overall_start = utc_datetime_to_local_qdatetime(self._min_ts)
-            overall_end = utc_datetime_to_local_qdatetime(
+            overall_start = utc_datetime_to_qdatetime(self._min_ts)
+            overall_end = utc_datetime_to_qdatetime(
                 self._max_ts + timedelta(minutes=RADAR_STEP_MINUTES)
             )
             try:

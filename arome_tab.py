@@ -49,6 +49,7 @@ from .arome_core import (
 from .arome_styles import apply_style, build_legend_pixmap
 from .common import apply_fixed_temporal_range, configure_temporal_animation, format_local_time
 from .common import get_api_key, get_cache_root, utc_datetime_to_local_qdatetime
+from .common import utc_datetime_to_qdatetime
 
 SERIE_TEMPORELLE_DEFAULT_HEURES = 24
 
@@ -739,10 +740,10 @@ class AromeTabWidget(QWidget):
         temporal_note = ""
         panel_opened = False
         if reference_dt is not None and task.results:
-            overall_start = utc_datetime_to_local_qdatetime(
+            overall_start = utc_datetime_to_qdatetime(
                 reference_dt + timedelta(hours=task.results[0][0])
             )
-            overall_end = utc_datetime_to_local_qdatetime(
+            overall_end = utc_datetime_to_qdatetime(
                 reference_dt + timedelta(hours=task.results[-1][0] + pas_heures)
             )
             try:
