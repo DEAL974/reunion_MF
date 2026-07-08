@@ -2,6 +2,21 @@
 
 Toutes les modifications notables de ce plugin sont documentées ici.
 
+## [0.3.10] - 2026-07-08
+
+- Corrige le vrai dernier maillon du bug d'animation radar, trouvé grâce
+  à un diagnostic console montrant un Temporal Controller parfaitement
+  configuré (3 frames de 5 min, mode Animated) mais un groupe de couches
+  radar entièrement **vide**. Cause : `_loaded_timestamps` (un `set` de
+  timestamps "déjà vus") ne vérifiait jamais si la couche correspondante
+  existait encore réellement dans le projet — si elle avait été
+  supprimée manuellement puis qu'une actualisation ne ramenait aucune
+  échéance vraiment nouvelle, le plugin la croyait "déjà chargée" et ne
+  la recréait pas, laissant le Temporal Controller animer une fenêtre
+  sans aucune couche à afficher. Remplacé par `_loaded_layer_ids` (dict
+  timestamp → id de couche), qui revérifie `project.mapLayer(id)` avant
+  de sauter une échéance.
+
 ## [0.3.9] - 2026-07-08
 
 - Corrige la cause racine du bug d'animation, diagnostiquée via un test

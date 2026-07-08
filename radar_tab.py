@@ -87,7 +87,7 @@ class RadarTabWidget(QWidget):
         self.iface = iface
         self._overlay_manager = overlay_manager
         self._ensure_base_layers = ensure_base_layers
-        self._loaded_timestamps: set[str] = set()  # évite les doublons de couches
+        self._loaded_layer_ids: dict[str, str] = {}  # ts.isoformat() -> id de couche, évite les doublons
         self._min_ts = None  # bornes cumulées de l'historique local, pour le Temporal Controller
         self._max_ts = None
         self._build_ui()
@@ -177,8 +177,9 @@ class RadarTabWidget(QWidget):
 
         for ts, path in task.results:
             key = ts.isoformat()
-            if key in self._loaded_timestamps:
-                continue  # déjà chargé lors d'une actualisation précédente
+            existing_id = self._loaded_layer_ids.get(key)
+            if existing_id is not None and project.mapLayer(existing_id) is not None:
+                continue  # déjà chargé lors d'une actualisation précédente ET toujours présent
 
             layer_name = f"Radar Réunion — {format_local_time(ts)} (heure locale)"
             layer = QgsRasterLayer(str(path), layer_name)
@@ -193,7 +194,7 @@ class RadarTabWidget(QWidget):
 
             project.addMapLayer(layer, addToLegend=False)
             group.addLayer(layer)
-            self._loaded_timestamps.add(key)
+            self._loaded_layer_ids[key] = layer.id()
             self._min_ts = ts if self._min_ts is None else min(self._min_ts, ts)
             self._max_ts = ts if self._max_ts is None else max(self._max_ts, ts)
             nb_ajoutees += 1
